@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta http-equiv="Content-Type" content="text/html; charset=utf-8" >
+	<meta charset="utf-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1">
+  
+	<title>Chain.com Test</title>
+	<script src="http://code.jquery.com/jquery-latest.js"></script>
+
+</head>
+
+    <script>
+   
+	
+	$(document).ready(function(){
+		$("#address").click(function(){
+			//$("p").slideToggle();
+			$.get('http://localhost:3000/fetch_transactions').then(function(d) {
+				var string = ""; 
+				jQuery.each(d['activities'], function(i, val) {
+					var inputs =  val['inputs'];
+					var outputs =  val['outputs'];
+					
+					var outparse = JSON.parse(outputs[0].asset_label);
+					string += "ID: " + val['transaction_id'] +"<br>Time: "+ val['transaction_time'] + "<br>Node ID: "+ outparse.nodeID+ "<br>Account: "+ inputs[0].account_label+ "<br> Data: "+ outparse.data +"<br><br><br>"
+				});
+				$('#textaddress').html(string);
+			});
+		});
+
+		$("#pass").click(function(){
+			var nodeID = $("#inputNodeID").val();
+			var accountID = $("#inputAccountID").val();
+			var data = $("#inputData").val();
+			var xprv = $("#inputXprv").val();
+			var jsonData = '{\"nodeID\":\"'+nodeID+'\",\"data\":\"'+data+'\"}';
+			$.post("http://localhost:3000/embed",{id: nodeID,text: jsonData, xprv:xprv, accountID: accountID}, function(data){
+        	    alert("Added!");
+        	   $.get('http://localhost:3000/fetch_transactions').then(function(d) {
+				var string = ""; 
+				jQuery.each(d['activities'], function(i, val) {
+					var inputs =  val['inputs'];
+					var outputs =  val['outputs'];
+					var inparse = JSON.parse(inputs[0]);
+					console.log(inparse);
+					var outparse = JSON.parse(outputs[0].asset_label);
+					string += "ID: " + val['transaction_id'] +"<br>Time: "+ val['transaction_time'] + "<br>Issuer ID: "+ outparse.nodeID+ "<br>Issuer Name: "+ inparse.account_label + "<br> Data: "+ outparse.data +"<br><br><br>"
+				});
+				$('#textaddress').html(string);
+			});
+          	});
+
+
+		});
+
+		
+	});
+  
+    </script>
+    <body><center>
+    <input id="inputNodeID" type="text" placeholder="Enter node ID" value="in072ERNKPG09QY"/>
+    <input id="inputAccountID" type="text" placeholder="Enter Account ID" value="acc077BJGBV0084G"/>
+    <input id="inputXprv" type="text" placeholder="Enter xprv" value="xprv9s21ZrQH143K3nxTwQdviZJrF3UaKity2icgCmQHnTLwda71eFAhn6hsTcAVZzQXqKwmvU8JLz9ZPwFFExUBb9yfKGVQJvkmKrVZsFwqDTw"/>
+    <input id="inputData" type="text" placeholder="Enter data"/>
+    <button id="pass">Add data</button><br><br>
+	<button id="address">Get Transactions</button><br><br>
+	<p id="textaddress">TXS</p>
+
+	</center>
+	</body>
+</html>
